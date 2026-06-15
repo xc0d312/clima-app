@@ -1,0 +1,60 @@
+services:
+  backend-service:
+    image: clima-backend:latest
+    container_name: clima-backend
+    build:
+      context: ./backend
+      dockerfile: dockerfile
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - clima-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true  # Para hot reload en Docker
+
+  frontend-service:
+    image: clima-frontend:latest
+    container_name: clima-frontend
+    build:
+      context: ./frontend
+      dockerfile: dockerfile
+    env_file:
+      - ./frontend/.env
+    ports:
+      - "3001:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - clima-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    depends_on:
+      - backend-service
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+
+networks:
+  clima-network:
+    driver: bridge
+    name: clima-network

@@ -1,0 +1,31 @@
+# frontend/Dockerfile
+# Dockerfile optimizado para desarrollo con React + Vite
+# Configurado para hot reload y compatibilidad con Windows 11
+
+# Usar imagen Node LTS completa para mejor compatibilidad con herramientas de desarrollo
+FROM node:24-alpine
+
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar archivos de dependencias primero (para mejor caching de capas)
+COPY package*.json ./
+
+# Instalar todas las dependencias (incluyendo devDependencies)
+# Usar npm install para mayor flexibilidad en desarrollo
+RUN npm install && npm cache clean --force
+
+# Copiar el resto de la aplicación
+COPY . .
+
+# Exponer puerto de desarrollo de Vite (configurado para 5173 para coincidir con docker-compose)
+EXPOSE 5173
+
+# Configurar variables de entorno para hot reload en Docker
+ENV NODE_ENV=development
+ENV CHOKIDAR_USEPOLLING=true
+ENV WATCHPACK_POLLING=true
+
+# Comando para desarrollo - inicia servidor Vite con hot reload
+# Usamos 0.0.0.0 para permitir conexiones desde fuera del contenedor
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]

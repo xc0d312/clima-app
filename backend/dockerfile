@@ -1,0 +1,25 @@
+# backend/Dockerfile
+FROM node:24-alpine
+
+# Crear directorio de trabajo
+WORKDIR /usr/src/app
+
+# Copiar archivos de configuración de dependencias
+COPY package*.json ./
+
+# Instalar dependencias
+RUN npm install && npm cache clean --force
+
+# Copiar el código fuente
+COPY . /usr/src/app/
+
+# Exponer el puerto
+EXPOSE 3000
+
+# Configurar variables de entorno para hot reload en Docker
+ENV NODE_ENV=development
+ENV CHOKIDAR_USEPOLLING=true
+ENV WATCHPACK_POLLING=true
+
+# Comando para ejecutar la aplicación
+CMD ["npm", "run", "dev"]
